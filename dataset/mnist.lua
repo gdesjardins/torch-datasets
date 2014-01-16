@@ -21,7 +21,7 @@ Mnist.name         = 'mnist'
 Mnist.dimensions   = {1, 28, 28}
 Mnist.n_dimensions = 1 * 28 * 28
 Mnist.size         = 60000
-Mnist.classes      = {[0] = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+Mnist.classes      = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 Mnist.url          = 'http://data.neuflow.org/data/mnist-th7.tgz'
 Mnist.file         = 'mnist-th7/train.th7'
 
@@ -90,6 +90,7 @@ function Mnist.dataset(opts)
    size          = arg.optional(opts, 'size', test and Mnist.test_size or Mnist.size)
    sort          = arg.optional(opts, 'sort', false)
    transform     = arg.optional(opts, 'sort', nil)
+   base1         = arg.optional(opts, 'labelsBase1', false)
 
    local transformations = {}
 
@@ -106,6 +107,10 @@ function Mnist.dataset(opts)
    local labels = torch.Tensor(size)
    for i=1,size do
       labels[i] = data[{i, 785}]
+   end
+
+   if base1 then
+       labels:add(1)
    end
 
    if sort then
