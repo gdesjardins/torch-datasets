@@ -9,6 +9,11 @@ local TORCH_DIR = paths.concat(os.getenv('HOME'), '.torch')
 local DATA_DIR  = paths.concat(TORCH_DIR, 'data')
 
 dataset = {}
+
+function dataset.get_data_dir()
+    return DATA_DIR
+end
+
 -- Check locally and download dataset if not found.  Returns the path to the
 -- downloaded data file.
 function dataset.get_data(name, url)
