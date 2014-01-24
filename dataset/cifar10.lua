@@ -26,11 +26,9 @@ cifar10_md = {
 }
 
 
-cifar10_test_md = util.merge(util.copy(cifar10_md), {
-    size = function() return 10000 end,
-    files   = {'cifar-10-batches-t7/test_batch.t7'}
-})
-
+cifar10_test_md = util.copy(cifar10_md)
+cifar10_test_md.size = function() return 10000 end
+cifar10_test_md.files = {'cifar-10-batches-t7/test_batch.t7'}
 
 local function load_data_files(md)
     local data   = torch.Tensor(md.size(), md.n_dimensions)
