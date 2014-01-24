@@ -21,7 +21,7 @@ Mnist.name         = 'mnist'
 Mnist.dimensions   = {1, 28, 28}
 Mnist.n_dimensions = 1 * 28 * 28
 Mnist.size         = 60000
-Mnist.classes      = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+Mnist.classes      = {[0] = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 Mnist.url          = 'http://data.neuflow.org/data/mnist-th7.tgz'
 Mnist.file         = 'mnist-th7/train.th7'
 
@@ -80,7 +80,7 @@ end
 --   -- use the test data rather than the training data:
 --   m = dataset.Mnist({test = true})
 function Mnist.dataset(opts)
-   local scale, normalize, zca_whiten, size, frames, rotation, translation, zoom
+   local scale, normalize, zca_whiten, size, frames, rotation, translation, zoom, labelsBase1
    opts          = opts or {}
    test          = arg.optional(opts, 'test', false)
    scale         = arg.optional(opts, 'scale', {})
@@ -90,7 +90,7 @@ function Mnist.dataset(opts)
    size          = arg.optional(opts, 'size', test and Mnist.test_size or Mnist.size)
    sort          = arg.optional(opts, 'sort', false)
    transform     = arg.optional(opts, 'sort', nil)
-   base1         = arg.optional(opts, 'labelsBase1', false)
+   labelsBase1    = arg.optional(opts, 'labelsBase1', false)
 
    local transformations = {}
 
@@ -109,16 +109,17 @@ function Mnist.dataset(opts)
       labels[i] = data[{i, 785}]
    end
 
-   if base1 then
-       labels:add(1)
-   end
-
    if sort then
       samples, labels = dataset.sort_by_class(samples, labels)
    end
 
    if (#scale == 2) then
       dataset.scale(samples, scale[1], scale[2])
+   end
+
+   if labelsBase1 then
+      labels:add(1)
+      Mnist.classes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
    end
 
    local d = dataset.TableDataset({data = samples, class = labels}, Mnist)
