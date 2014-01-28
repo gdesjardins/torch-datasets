@@ -55,7 +55,7 @@ local function local_normalization(data)
         local yuv = image.rgb2yuv(data[i])
 
         -- normalize y locally:
-        yuv[1] = normalization(yuv[{{1}}])
+        yuv[1] = normalization:forward(yuv[{{1}}])
         data[i] = yuv
     end
 
