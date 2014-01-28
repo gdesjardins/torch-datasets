@@ -14,7 +14,7 @@ Pentomino = {}
 Pentomino.name         = 'pentomino'
 Pentomino.dimensions   = {1, 64, 64}
 Pentomino.n_dimensions = 1 * 64 * 64
-Pentomino.classes      = {[1] = 0, 1}
+Pentomino.classes      = {0, 1}
 
 -- Setup a Pentomino dataset instance.
 function Pentomino.dataset(opts)
