@@ -6,6 +6,7 @@ require 'paths'
 require 'util/file'
 require 'logroll'
 require 'dataset'
+require 'xlua'
 
 cifar10 = {}
 
@@ -49,8 +50,10 @@ end
 
 local function local_normalization(data)
     normalization = nn.SpatialContrastiveNormalization(1, image.gaussian1D(7))
-
-    for i = 1, cifar10_md.size() do
+    
+    print('Performing local normalization')
+    for i = 1, data:size(1) do
+        xlua.progress(i, data:size(1))
         -- rgb -> yuv
         local yuv = image.rgb2yuv(data[i])
 
@@ -64,6 +67,7 @@ end
 
 
 local function global_normalization(data)
+    print('Performing global normalization')
     -- normalize u globally:
     mean_u = data[{ {},2,{},{} }]:mean()
     std_u = data[{ {},2,{},{} }]:std()
