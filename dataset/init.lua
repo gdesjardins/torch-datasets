@@ -33,12 +33,13 @@ end
 
 
 -- Downloads the data if not available locally, and returns local path.
-function dataset.data_path(name, url, file)
+function dataset.data_path(name, url, file, decompress)
     local data_path  = dataset.get_data(name, url)
     local data_dir   = paths.dirname(data_path)
     local local_path = paths.concat(data_dir, file)
+    local decompress = decompress==nil and true or decompress
 
-    if not is_file(local_path) then
+    if not is_file(local_path) and decompress then
         do_with_cwd(data_dir,
           function()
               print("decompressing file: ", data_path)
