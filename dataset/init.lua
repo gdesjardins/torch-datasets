@@ -128,3 +128,37 @@ function dataset.zoomer(start, dz)
    end
 end
 
+
+--[[
+Split a TableDataset into two, e.g. to use as train (dev) and validation set.
+
+@param tableDataset instance of the type dataset.TableDataset
+@param opts.ratio proportion of training instances to use for "new" dataset
+
+@return table of length two. First entry is the original tableDataset, modified
+        to only have the first (1 - opts.ratio) * nElements training instances. The
+        second entry is a new TableDataset having the last opts.ratio * nElements.
+
+@note If you intend to use this function to split a training set into train/valid, you
+      should first ensure that the original dataset is randomized.
+--]]
+function dataset.splitter(tableDataset, opts)
+    local ratio = opts.ratio or 0.1
+    local nElem = tableDataset:size()
+    local nSplit = math.floor(tableDataset:size() * (1 - ratio) + 0.5)
+  
+    -- create new TableDataset from original dataset
+    local dataTable = {data = tableDataset.dataset.data[{{nSplit, nElem}}]}
+    if tableDataset.dataset.class then
+        dataTable.class = tableDataset.dataset.class[{{nSplit, nElem}}] 
+    end
+    local newTableDataset = dataset.TableDataset(dataTable, tableDataset:metadata())
+
+    -- strip away old data from original dataset
+    tableDataset.dataset.data = tableDataset.dataset.data[{{1,nSplit}}] 
+    if tableDataset.dataset.class then
+        tableDataset.dataset.class = tableDataset.dataset.class[{{1,nSplit}}] 
+    end
+    
+    return {tableDataset, newTableDataset}
+end
