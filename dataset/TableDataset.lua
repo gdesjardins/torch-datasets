@@ -61,6 +61,14 @@ function TableDataset:n_dimensions()
    return fn.reduce(fn.mul, 1, self:dimensions())
 end
 
+function TableDataset:data()
+   return self.dataset.data
+end
+
+function TableDataset:class()
+   return self.dataset.class
+end
+
 function TableDataset:metadata()
    return {
       name = self:name(),
