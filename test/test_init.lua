@@ -43,22 +43,16 @@ function tests.test_split_by_class1()
     tester:assertTensorEq(rval[3], torch.Tensor({{5}}), precision)
 end
 
-function tests.test_merge_datasets()
-    torch.manualSeed(98712)
-    local dset1 = {
-        data  = torch.Tensor({{1}, {4}, {7}}),
-        class = torch.Tensor({1, 1, 1})   
+function tests.test_include_by_class()
+    local dset = {
+        data  = torch.Tensor({{1}, {2}, {3}, {4}, {5}, {6}, {7}}),
+        class = torch.Tensor({  1,   2,   2,   1,   3,   2,   1}),
+        classes = torch.Tensor({1,2,3}),
     }
-    local dset2 = {
-        data  = torch.Tensor({{2}, {3}}),
-        class = torch.Tensor({2, 2})   
-    }
-    
-    local allData, allLabels = dataset.merge_datasets({dset1.data, dset2.data}, {dset1.class, dset2.class}, true)
-    tester:assertTensorEq(allData, torch.Tensor({{1},{7},{2},{3},{4}}), precision)
-    tester:assertTensorEq(allLabels, torch.Tensor({1, 1, 2, 2, 1}), precision)
+    local data, labels = dataset.include_by_class(dset.data, dset.class, {1,3})
+    tester:assertTensorEq(data, torch.Tensor({{1},{4},{5},{7}}), precision)
+    tester:assertTensorEq(labels, torch.Tensor({1,1,3,1}), precision)
 end
-
 
 return tester:add(tests):run()
 

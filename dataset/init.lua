@@ -113,6 +113,35 @@ function dataset.split_by_class(samples, labels, classes)
     return split_samples
 end
 
+local function count_classes(labels, labels_to_count)
+    local nElem = 0
+    for _, label_to_count in ipairs(labels_to_count) do
+        nElem = nElem + labels:eq(label_to_count):sum()
+    end
+    return nElem
+end
+
+function dataset.include_by_class(samples, labels, labels_to_include)
+    assert(samples:size(1) == labels:size(1))
+    local nElem = count_classes(labels, labels_to_include)
+    local samples_size = samples:size()
+    samples_size[1] = nElem
+    
+    local class_samples = torch.Tensor(samples_size)
+    local class_labels = torch.Tensor(nElem)
+    local output_index = 1
+    for i=1, samples:size(1) do
+        for _, label_to_include in ipairs(labels_to_include) do
+            if labels[i] == label_to_include then
+                class_samples[{{output_index}}] = samples[{{i}}]
+                class_labels[{{output_index}}] = label_to_include
+                output_index = output_index + 1
+            end
+        end
+    end
+
+    return class_samples, class_labels
+end
 
 function dataset.rotator(start, delta)
    local angle = start
