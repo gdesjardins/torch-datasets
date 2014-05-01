@@ -9,6 +9,7 @@ local TORCH_DIR = paths.concat(os.getenv('HOME'), '.torch')
 local DATA_DIR  = paths.concat(TORCH_DIR, 'data')
 
 dataset = {}
+
 -- Check locally and download dataset if not found.  Returns the path to the
 -- downloaded data file.
 function dataset.get_data(name, url)
@@ -80,6 +81,36 @@ function dataset.sort_by_class(samples, labels)
     end
 
     return sorted_samples, sorted_labels
+end
+
+--[[
+Given a dataset with N classes, splits a dataset into its respective classes.
+
+@param samples (torch.Tensor) training examples
+@param labels (torch.Tensor) training labels
+@param classes (table or torch.Tensor) class labels, i.e. {1,2,...,10} for MNIST
+@return table where the i-th entry contains all the rows of `samples` corresponding
+        to the i-th class.
+--]]
+function dataset.split_by_class(samples, labels, classes)
+    assert(samples:size(1) == labels:size(1))
+    local sorted_classes, _ = torch.sort(torch.Tensor(classes))
+    local sorted_samples, sorted_labels = dataset.sort_by_class(samples, labels)
+    
+    local current_class = sorted_labels[1]
+    local current_class_index = 1
+    local split_samples = {} 
+    for i=1, labels:size(1) do
+       if sorted_labels[i] ~= current_class then
+          table.insert(split_samples, sorted_samples[{{current_class_index, i-1}}])
+          current_class = sorted_labels[i]
+          current_class_index = i
+       end
+    end
+   
+    table.insert(split_samples, sorted_samples[{{current_class_index, sorted_samples:size(1)}}])
+    
+    return split_samples
 end
 
 
