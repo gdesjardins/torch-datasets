@@ -121,6 +121,17 @@ local function count_classes(labels, labels_to_count)
     return nElem
 end
 
+--[[
+Build a new dataset, extracting all examples with labels in `labels_to_include`.
+e.g. on MNIST, calling this function with labels_to_include={1,2,5} will create
+a new dataset containing digits 1, 2 and 5 only.
+
+@param samples (torch.Tensor) training examples
+@param labels (torch.Tensor) training labels
+@param labels_to_include (table or torch.Tensor) class labels to include
+@return pair of torch.Tensors containing the extracted examples and their
+        respective labels.
+--]]
 function dataset.include_by_class(samples, labels, labels_to_include)
     assert(samples:size(1) == labels:size(1))
     local nElem = count_classes(labels, labels_to_include)
