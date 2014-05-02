@@ -80,17 +80,16 @@ end
 --   -- use the test data rather than the training data:
 --   m = dataset.Mnist({test = true})
 function Mnist.dataset(opts)
-   local scale, normalize, zca_whiten, size, frames, rotation, translation, zoom
-   opts          = opts or {}
-   test          = arg.optional(opts, 'test', false)
-   scale         = arg.optional(opts, 'scale', {})
-   normalize     = arg.optional(opts, 'normalize', false)
-   binarize     = arg.optional(opts, 'binarize', false)
-   zca_whiten    = arg.optional(opts, 'zca_whiten', false)
-   size          = arg.optional(opts, 'size', test and Mnist.test_size or Mnist.size)
-   sort          = arg.optional(opts, 'sort', false)
-   transform     = arg.optional(opts, 'sort', nil)
-   base1         = arg.optional(opts, 'labelsBase1', false)
+   opts = opts or {}
+   local test          = arg.optional(opts, 'test', false)
+   local scale         = arg.optional(opts, 'scale', {})
+   local normalize     = arg.optional(opts, 'normalize', false)
+   local binarize      = arg.optional(opts, 'binarize', false)
+   local zca_whiten    = arg.optional(opts, 'zca_whiten', false)
+   local size          = arg.optional(opts, 'size', test and Mnist.test_size or Mnist.size)
+   local sort          = arg.optional(opts, 'sort', false)
+   local transform     = arg.optional(opts, 'sort', nil)
+   local base1         = arg.optional(opts, 'labelsBase1', false)
 
    local transformations = {}
 
@@ -124,6 +123,7 @@ function Mnist.dataset(opts)
    local d = dataset.TableDataset({data = samples, class = labels}, Mnist)
 
    if binarize then
+      local threshold
       if #scale == 2 then
           threshold = (scale[2]+scale[1])/2
       else 
