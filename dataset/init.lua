@@ -9,6 +9,7 @@ local TORCH_DIR = paths.concat(os.getenv('HOME'), '.torch')
 local DATA_DIR  = paths.concat(TORCH_DIR, 'data')
 
 dataset = {}
+
 -- Check locally and download dataset if not found.  Returns the path to the
 -- downloaded data file.
 function dataset.get_data(name, url)
@@ -82,6 +83,76 @@ function dataset.sort_by_class(samples, labels)
     return sorted_samples, sorted_labels
 end
 
+--[[
+Given a dataset with N classes, splits a dataset into its respective classes.
+
+@param samples (torch.Tensor) training examples
+@param labels (torch.Tensor) training labels
+@param classes (table or torch.Tensor) class labels, i.e. {1,2,...,10} for MNIST
+@return table where the i-th entry contains all the rows of `samples` corresponding
+        to the i-th class.
+--]]
+function dataset.split_by_class(samples, labels, classes)
+    assert(samples:size(1) == labels:size(1))
+    local sorted_classes, _ = torch.sort(torch.Tensor(classes))
+    local sorted_samples, sorted_labels = dataset.sort_by_class(samples, labels)
+    
+    local current_class = sorted_labels[1]
+    local current_class_index = 1
+    local split_samples = {} 
+    for i=1, labels:size(1) do
+       if sorted_labels[i] ~= current_class then
+          table.insert(split_samples, sorted_samples[{{current_class_index, i-1}}])
+          current_class = sorted_labels[i]
+          current_class_index = i
+       end
+    end
+   
+    table.insert(split_samples, sorted_samples[{{current_class_index, sorted_samples:size(1)}}])
+    
+    return split_samples
+end
+
+local function count_classes(labels, labels_to_count)
+    local nElem = 0
+    for _, label_to_count in ipairs(labels_to_count) do
+        nElem = nElem + labels:eq(label_to_count):sum()
+    end
+    return nElem
+end
+
+--[[
+Build a new dataset, extracting all examples with labels in `labels_to_include`.
+e.g. on MNIST, calling this function with labels_to_include={1,2,5} will create
+a new dataset containing digits 1, 2 and 5 only.
+
+@param samples (torch.Tensor) training examples
+@param labels (torch.Tensor) training labels
+@param labels_to_include (table or torch.Tensor) class labels to include
+@return pair of torch.Tensors containing the extracted examples and their
+        respective labels.
+--]]
+function dataset.include_by_class(samples, labels, labels_to_include)
+    assert(samples:size(1) == labels:size(1))
+    local nElem = count_classes(labels, labels_to_include)
+    local samples_size = samples:size()
+    samples_size[1] = nElem
+    
+    local class_samples = torch.Tensor(samples_size)
+    local class_labels = torch.Tensor(nElem)
+    local output_index = 1
+    for i=1, samples:size(1) do
+        for _, label_to_include in ipairs(labels_to_include) do
+            if labels[i] == label_to_include then
+                class_samples[{{output_index}}] = samples[{{i}}]
+                class_labels[{{output_index}}] = label_to_include
+                output_index = output_index + 1
+            end
+        end
+    end
+
+    return class_samples, class_labels
+end
 
 function dataset.rotator(start, delta)
    local angle = start
@@ -128,3 +199,37 @@ function dataset.zoomer(start, dz)
    end
 end
 
+
+--[[
+Split a TableDataset into two, e.g. to use as train (dev) and validation set.
+
+@param tableDataset instance of the type dataset.TableDataset
+@param opts.ratio proportion of training instances to use for "new" dataset
+
+@return table of length two. First entry is the original tableDataset, modified
+        to only have the first (1 - opts.ratio) * nElements training instances. The
+        second entry is a new TableDataset having the last opts.ratio * nElements.
+
+@note If you intend to use this function to split a training set into train/valid, you
+      should first ensure that the original dataset is randomized.
+--]]
+function dataset.splitter(tableDataset, opts)
+    local ratio = opts.ratio or 0.1
+    local nElem = tableDataset:size()
+    local nSplit = math.floor(tableDataset:size() * (1 - ratio) + 0.5)
+  
+    -- create new TableDataset from original dataset
+    local dataTable = {data = tableDataset.dataset.data[{{nSplit, nElem}}]}
+    if tableDataset.dataset.class then
+        dataTable.class = tableDataset.dataset.class[{{nSplit, nElem}}] 
+    end
+    local newTableDataset = dataset.TableDataset(dataTable, tableDataset:metadata())
+
+    -- strip away old data from original dataset
+    tableDataset.dataset.data = tableDataset.dataset.data[{{1,nSplit}}] 
+    if tableDataset.dataset.class then
+        tableDataset.dataset.class = tableDataset.dataset.class[{{1,nSplit}}] 
+    end
+    
+    return {tableDataset, newTableDataset}
+end
