@@ -86,12 +86,13 @@ end
 --[[
 Given a dataset with N classes, splits a dataset into its respective classes.
 
-@param samples (torch.Tensor) training examples
-@param labels (torch.Tensor) training labels
-@param classes (table or torch.Tensor) class labels, i.e. {1,2,...,10} for MNIST
-@return table where the i-th entry contains all the rows of `samples` corresponding
+Parameters:
+* samples (torch.Tensor) training examples
+* labels (torch.Tensor) training labels
+* classes (table or torch.Tensor) class labels, i.e. {1,2,...,10} for MNIST
+* table where the i-th entry contains all the rows of `samples` corresponding
         to the i-th class.
---]]
+]]
 function dataset.split_by_class(samples, labels, classes)
     assert(samples:size(1) == labels:size(1))
     local sorted_classes, _ = torch.sort(torch.Tensor(classes))
@@ -126,12 +127,13 @@ Build a new dataset, extracting all examples with labels in `labels_to_include`.
 e.g. on MNIST, calling this function with labels_to_include={1,2,5} will create
 a new dataset containing digits 1, 2 and 5 only.
 
-@param samples (torch.Tensor) training examples
-@param labels (torch.Tensor) training labels
-@param labels_to_include (table or torch.Tensor) class labels to include
-@return pair of torch.Tensors containing the extracted examples and their
-        respective labels.
---]]
+Parameters:
+* samples (torch.Tensor) training examples
+* labels (torch.Tensor) training labels
+* labels_to_include (table or torch.Tensor) class labels to include
+
+Returns: pair of torch.Tensors containing the extracted examples and their respective labels.
+]]
 function dataset.include_by_class(samples, labels, labels_to_include)
     assert(samples:size(1) == labels:size(1))
     local nElem = count_classes(labels, labels_to_include)
@@ -203,16 +205,17 @@ end
 --[[
 Split a TableDataset into two, e.g. to use as train (dev) and validation set.
 
-@param tableDataset instance of the type dataset.TableDataset
-@param opts.ratio proportion of training instances to use for "new" dataset
+Parameters:
+* tableDataset instance of the type dataset.TableDataset
+* opts.ratio proportion of training instances to use for "new" dataset
 
-@return table of length two. First entry is the original tableDataset, modified
-        to only have the first (1 - opts.ratio) * nElements training instances. The
-        second entry is a new TableDataset having the last opts.ratio * nElements.
+Returns: table of length two. First entry is the original tableDataset, modified
+to only have the first (1 - opts.ratio) * nElements training instances. The
+second entry is a new TableDataset having the last opts.ratio * nElements.
 
-@note If you intend to use this function to split a training set into train/valid, you
-      should first ensure that the original dataset is randomized.
---]]
+Note: If you intend to use this function to split a training set into train/valid, you
+should first ensure that the original dataset is randomized.
+]]
 function dataset.splitter(tableDataset, opts)
     local ratio = opts.ratio or 0.1
     local nElem = tableDataset:size()
