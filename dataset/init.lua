@@ -219,12 +219,12 @@ should first ensure that the original dataset is randomized.
 function dataset.splitter(tableDataset, opts)
     local ratio = opts.ratio or 0.1
     local nElem = tableDataset:size()
-    local nSplit = math.floor(tableDataset:size() * (1 - ratio) + 0.5)
+    local nSplit = math.floor(nElem * (1 - ratio) + 0.5)
   
     -- create new TableDataset from original dataset
-    local dataTable = {data = tableDataset.dataset.data[{{nSplit, nElem}}]}
+    local dataTable = {data = tableDataset.dataset.data[{{nSplit+1, nElem}}]}
     if tableDataset.dataset.class then
-        dataTable.class = tableDataset.dataset.class[{{nSplit, nElem}}] 
+        dataTable.class = tableDataset.dataset.class[{{nSplit+1, nElem}}]
     end
     local newTableDataset = dataset.TableDataset(dataTable, tableDataset:metadata())
 
